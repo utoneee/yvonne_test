@@ -265,7 +265,9 @@ function readPad(p, s) {
 }
 // 觸控：左下虛擬搖桿、右下四顆按鈕
 const touch = {}, pointers = new Map();
-let touchMode = false;
+// 一開頁就判斷是否為觸控裝置（部分 App 內瀏覽器的 pointerType 不會回報 touch）
+let touchMode = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
+addEventListener('touchstart', () => { touchMode = true; }, { passive: true });
 const JOY = { x: 170, y: 570, r: 95, kx: 0, ky: 0 };
 const TBTN = [
   { k: 'lp', x: 1000, y: 625, r: 50, label: '輕' }, { k: 'hp', x: 1125, y: 600, r: 50, label: '重' },
@@ -301,7 +303,7 @@ function recomputeTouch() {
 }
 cv.addEventListener('pointerdown', e => {
   Sfx.init(); e.preventDefault();
-  if (e.pointerType === 'touch') touchMode = true;
+  if (e.pointerType === 'touch' || e.pointerType === 'pen') touchMode = true;
   const p = toCanvas(e); p.role = null;
   if (inFightControls() && touchMode) {
     if (p.x < W * 0.45 && p.y > 250) p.role = 'joy';
